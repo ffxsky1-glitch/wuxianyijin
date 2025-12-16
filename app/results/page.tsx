@@ -53,7 +53,7 @@ export default function ResultsPage() {
 
     setGeneratingPDF(true);
     try {
-      await generatePDF(results);
+      await generatePDF();
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('PDF 生成失败，请重试');
@@ -74,7 +74,7 @@ export default function ResultsPage() {
           </p>
         </div>
 
-        {/* 统计信息 */}
+        {/* 统计信息和下载按钮 - 不截图的部分 */}
         {results.length > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -110,6 +110,71 @@ export default function ResultsPage() {
           </div>
         )}
 
+        {/* PDF 导出的内容 - 设置为隐藏的样式副本用于截图 */}
+        {results.length > 0 && (
+          <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1200px', padding: '20px', backgroundColor: 'white' }}>
+            <div id="pdf-content" style={{ fontFamily: 'Microsoft YaHei, Arial, sans-serif' }}>
+              {/* PDF 标题 */}
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <h1 style={{ fontSize: '24px', margin: '0 0 10px 0', fontWeight: 'bold' }}>社保费用计算报表</h1>
+                <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                  生成时间：{new Date().toLocaleString('zh-CN')}
+                </p>
+              </div>
+
+              {/* 统计信息 */}
+              <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>统计摘要</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>员工总数</p>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#333', margin: 0 }}>{results.length}</p>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>月均工资总和</p>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+                      ¥{results.reduce((sum, r) => sum + r.avg_salary, 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>月缴费总额</p>
+                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669', margin: 0 }}>¥{calculateTotal()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 员工详情表格 */}
+              <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>员工缴费明细</h2>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f9fafb' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>序号</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>员工姓名</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>年度月平均工资</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>缴费基数</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>公司应缴金额</th>
+                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>计算时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((result, index) => (
+                    <tr key={result.id} style={index % 2 === 0 ? { backgroundColor: '#ffffff' } : { backgroundColor: '#f9fafb' }}>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>{index + 1}</td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937', fontWeight: '500' }}>{result.employee_name}</td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.avg_salary.toFixed(2)}</td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.contribution_base.toFixed(2)}</td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#059669', fontWeight: '600' }}>¥{result.company_fee.toFixed(2)}</td>
+                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
+                        {formatDate(result.created_at)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {/* 错误提示 */}
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8">
@@ -129,7 +194,7 @@ export default function ResultsPage() {
         {!loading && !error && results.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table id="results-table" className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
