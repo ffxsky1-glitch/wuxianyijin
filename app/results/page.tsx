@@ -110,68 +110,66 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* PDF 导出的内容 - 设置为隐藏的样式副本用于截图 */}
+              {/* 用于PDF导出的完整内容（隐藏） */}
         {results.length > 0 && (
-          <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1200px', padding: '20px', backgroundColor: 'white' }}>
-            <div id="pdf-content" style={{ fontFamily: 'Microsoft YaHei, Arial, sans-serif' }}>
-              {/* PDF 标题 */}
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                <h1 style={{ fontSize: '24px', margin: '0 0 10px 0', fontWeight: 'bold' }}>社保费用计算报表</h1>
-                <p style={{ fontSize: '14px', color: '#666', margin: 0 }}>
-                  生成时间：{new Date().toLocaleString('zh-CN')}
-                </p>
-              </div>
+          <div id="results-table" style={{ position: 'absolute', left: '-9999px', top: 0, width: '1200px', padding: '20px', backgroundColor: 'white', fontFamily: 'Microsoft YaHei, Arial, sans-serif' }}>
+            {/* PDF 标题 */}
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <h1 style={{ fontSize: '28px', margin: '0 0 15px 0', fontWeight: 'bold', color: '#1f2937' }}>社保费用计算报表</h1>
+              <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
+                生成时间：{new Date().toLocaleString('zh-CN')}
+              </p>
+            </div>
 
-              {/* 统计信息 */}
-              <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
-                <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>统计摘要</h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>员工总数</p>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#333', margin: 0 }}>{results.length}</p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>月均工资总和</p>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-                      ¥{results.reduce((sum, r) => sum + r.avg_salary, 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', color: '#666', margin: '0 0 5px 0' }}>月缴费总额</p>
-                    <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#059669', margin: 0 }}>¥{calculateTotal()}</p>
-                  </div>
+            {/* 统计信息 */}
+            <div style={{ marginBottom: '40px', padding: '25px', backgroundColor: '#f9fafb', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+              <h2 style={{ fontSize: '20px', marginBottom: '20px', color: '#1f2937' }}>统计摘要</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '30px' }}>
+                <div style={{ textAlign: 'center', padding: '15px', backgroundColor: 'white', borderRadius: '6px' }}>
+                  <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 10px 0' }}>员工总数</p>
+                  <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>{results.length}</p>
+                </div>
+                <div style={{ textAlign: 'center', padding: '15px', backgroundColor: 'white', borderRadius: '6px' }}>
+                  <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 10px 0' }}>月均工资总和</p>
+                  <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>
+                    ¥{results.reduce((sum, r) => sum + r.avg_salary, 0).toFixed(2)}
+                  </p>
+                </div>
+                <div style={{ textAlign: 'center', padding: '15px', backgroundColor: 'white', borderRadius: '6px' }}>
+                  <p style={{ fontSize: '16px', color: '#6b7280', margin: '0 0 10px 0' }}>月缴费总额</p>
+                  <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#059669', margin: 0 }}>¥{calculateTotal()}</p>
                 </div>
               </div>
-
-              {/* 员工详情表格 */}
-              <h2 style={{ fontSize: '18px', marginBottom: '15px', color: '#333' }}>员工缴费明细</h2>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f9fafb' }}>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>序号</th>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>员工姓名</th>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>年度月平均工资</th>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>缴费基数</th>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>公司应缴金额</th>
-                    <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontWeight: '600' }}>计算时间</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((result, index) => (
-                    <tr key={result.id} style={index % 2 === 0 ? { backgroundColor: '#ffffff' } : { backgroundColor: '#f9fafb' }}>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>{index + 1}</td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937', fontWeight: '500' }}>{result.employee_name}</td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.avg_salary.toFixed(2)}</td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.contribution_base.toFixed(2)}</td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#059669', fontWeight: '600' }}>¥{result.company_fee.toFixed(2)}</td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
-                        {formatDate(result.created_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
+
+            {/* 员工详情表格 */}
+            <h2 style={{ fontSize: '20px', marginBottom: '20px', color: '#1f2937' }}>员工缴费明细</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#f3f4f6' }}>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>序号</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>员工姓名</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>年度月平均工资</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>缴费基数</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>公司应缴金额</th>
+                  <th style={{ padding: '16px', textAlign: 'left', color: '#374151', fontWeight: '600', borderBottom: '1px solid #e5e7eb' }}>计算时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((result, index) => (
+                  <tr key={result.id} style={index % 2 === 0 ? { backgroundColor: '#ffffff' } : { backgroundColor: '#f9fafb' }}>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#1f2937', fontWeight: '500' }}>{index + 1}</td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>{result.employee_name}</td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.avg_salary.toFixed(2)}</td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.contribution_base.toFixed(2)}</td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#059669', fontWeight: '600' }}>¥{result.company_fee.toFixed(2)}</td>
+                    <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
+                      {formatDate(result.created_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
