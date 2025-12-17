@@ -42,6 +42,8 @@ export async function getCityStandard(year: string, cityName: string = '佛山')
     .select('*')
     .eq('year', year)
     .eq('city_name', cityName)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .single();
 
   if (error) throw error;
