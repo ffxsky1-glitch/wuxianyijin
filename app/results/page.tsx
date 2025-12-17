@@ -1,23 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Result } from '@/types';
 import { getCalculationResults } from '@/lib/supabase';
 import { generatePDF } from '@/lib/pdf-generator';
 
 export default function ResultsPage() {
+  const searchParams = useSearchParams();
   const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const fetchResults = async () => {
+  const fetchResults = async (forceRefresh: boolean = false) => {
     setLoading(true);
     setError(null);
 
     try {
+      // 如果是强制刷新，添加一个时间戳参数来避免缓存
       const data = await getCalculationResults();
       setResults(data);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
       setError('获取结果失败，请检查数据库连接');
@@ -27,8 +32,12 @@ export default function ResultsPage() {
   };
 
   useEffect(() => {
-    fetchResults();
-  }, []);
+    // 检查是否是从计算页面跳转过来的
+    const fromUpload = searchParams.get('from') === 'upload';
+    const timestamp = searchParams.get('t');
+
+    fetchResults(fromUpload || !!timestamp);
+  }, [searchParams]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('zh-CN', {
@@ -69,9 +78,14 @@ export default function ResultsPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             计算结果
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 mb-2">
             员工社保费用计算结果明细
           </p>
+          {lastUpdated && (
+            <p className="text-sm text-gray-500">
+              最后更新时间：{lastUpdated.toLocaleString('zh-CN')}
+            </p>
+          )}
         </div>
 
         {/* 统计信息和下载按钮 - 不截图的部分 */}

@@ -49,9 +49,22 @@ export async function getCityStandard(year: string, cityName: string = '佛山')
 }
 
 export async function saveCalculationResults(results: any[]) {
+  // 添加当前时间戳
+  const resultsWithTimestamp = results.map(result => ({
+    ...result,
+    created_at: new Date().toISOString(),
+    calculated_at: new Date().toISOString()
+  }));
+
+  // 先删除旧的结果（如果需要每次只保留最新的计算结果）
+  await supabase
+    .from('results')
+    .delete()
+    .neq('id', 0); // 删除所有记录（这是一个技巧，因为 id 不可能为 0）
+
   const { data, error } = await supabase
     .from('results')
-    .insert(results)
+    .insert(resultsWithTimestamp)
     .select();
 
   if (error) throw error;

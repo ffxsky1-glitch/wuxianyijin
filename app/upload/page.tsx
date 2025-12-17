@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { parseCitiesExcel, parseSalariesExcel } from '@/lib/excel-parser';
-import { insertCitiesData, insertSalariesData } from '@/lib/supabase';
+import { insertCitiesData, insertSalariesData, getCalculationResults } from '@/lib/supabase';
 import { executeFullCalculation } from '@/lib/calculations';
 
 export default function UploadPage() {
+  const router = useRouter();
   const [citiesFile, setCitiesFile] = useState<File | null>(null);
   const [salariesFile, setSalariesFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -66,7 +68,19 @@ export default function UploadPage() {
 
     try {
       await executeFullCalculation();
-      setMessage({ type: 'success', text: '计算完成！结果已保存，请前往结果页查看' });
+
+      // 计算成功后，先触发一次结果查询以刷新缓存
+      await getCalculationResults();
+
+      setMessage({
+        type: 'success',
+        text: '计算完成！结果已保存，正在为您跳转到结果页面...'
+      });
+
+      // 延迟跳转，让用户看到成功消息
+      setTimeout(() => {
+        router.push('/results?from=upload&t=' + Date.now());
+      }, 1500);
     } catch (error) {
       console.error(error);
       setMessage({ type: 'error', text: `计算失败：${error instanceof Error ? error.message : '未知错误'}` });
