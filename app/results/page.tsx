@@ -40,14 +40,21 @@ function ResultsPageContent() {
   }, [searchParams]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('zh-CN', {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai',
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit'
-    });
+    }).replace(/\//g, '/'); // 确保使用 / 而不是其他分隔符
+  };
+
+  // 获取计算时间，优先使用 calculated_at
+  const getCalculatedTime = (result: any) => {
+    return result.calculated_at || result.created_at;
   };
 
   const calculateTotal = () => {
@@ -131,7 +138,14 @@ function ResultsPageContent() {
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
               <h1 style={{ fontSize: '28px', margin: '0 0 15px 0', fontWeight: 'bold', color: '#1f2937' }}>社保费用计算报表</h1>
               <p style={{ fontSize: '16px', color: '#6b7280', margin: 0 }}>
-                生成时间：{new Date().toLocaleString('zh-CN')}
+                生成时间：{new Date().toLocaleString('zh-CN', {
+                  timeZone: 'Asia/Shanghai',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }).replace(/\//g, '/')}
               </p>
             </div>
 
@@ -178,7 +192,7 @@ function ResultsPageContent() {
                     <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#1f2937' }}>¥{result.contribution_base.toFixed(2)}</td>
                     <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#059669', fontWeight: '600' }}>¥{result.company_fee.toFixed(2)}</td>
                     <td style={{ padding: '14px 16px', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '13px' }}>
-                      {formatDate(result.created_at)}
+                      {formatDate(getCalculatedTime(result))}
                     </td>
                   </tr>
                 ))}
@@ -248,7 +262,7 @@ function ResultsPageContent() {
                         ¥{result.company_fee.toFixed(2)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(result.created_at)}
+                        {formatDate(getCalculatedTime(result))}
                       </td>
                     </tr>
                   ))}
