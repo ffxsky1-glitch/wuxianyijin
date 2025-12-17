@@ -23,7 +23,9 @@ export interface Result {
   avg_salary: number;
   contribution_base: number;
   company_fee: number;
+  city_standard_id?: number; // 可选的城市标准ID
   created_at: string;
+  calculated_at?: string; // 计算时间
 }
 
 // Excel 解析类型
@@ -48,4 +50,5 @@ export interface EmployeeSalarySummary {
   avg_salary: number;
   contribution_base: number;
   company_fee: number;
+  city_standard_id?: number; // 可选的城市标准ID
 }

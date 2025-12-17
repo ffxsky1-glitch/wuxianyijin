@@ -69,7 +69,8 @@ export async function executeFullCalculation(): Promise<void> {
         employee_name: employeeName,
         avg_salary: avgSalary,
         contribution_base: contributionBase,
-        company_fee: companyFee
+        company_fee: companyFee,
+        city_standard_id: cityStandard.id // 确保传递数字ID
       });
     });
 
